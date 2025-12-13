@@ -12,20 +12,13 @@ spec:
       image: gcr.io/kaniko-project/executor:latest
       tty: true
       volumeMounts:
-        - name: workspace-volume
-          mountPath: /home/jenkins/agent
         - name: dockerhub
           mountPath: /kaniko/.docker
     - name: kubectl
       image: bitnami/kubectl:latest
       command: ['cat']
       tty: true
-      volumeMounts:
-        - name: workspace-volume
-          mountPath: /home/jenkins/agent
   volumes:
-    - name: workspace-volume
-      emptyDir: {}
     - name: dockerhub
       secret:
         secretName: dockerhub
@@ -42,28 +35,31 @@ spec:
     IMAGE = "sorivma/dubrovsky-arseny"
   }
 
-  options {
-    timestamps()
-  }
+  options { timestamps() }
 
   stages {
     stage('Checkout') {
       steps {
         checkout scm
-        sh 'ls -la'
+        sh 'pwd; ls -la; ls -la k8s || true'
       }
     }
 
     stage('Build & Push image (Kaniko)') {
       steps {
         container('kaniko') {
-          sh """
+          sh '''
+            set -euo pipefail
+            echo "WORKSPACE=$WORKSPACE"
+            ls -la "$WORKSPACE"
+            test -f "$WORKSPACE/Dockerfile"
+
             /kaniko/executor \
-              --dockerfile=Dockerfile \
-              --context=/home/jenkins/agent/workspace/${JOB_NAME} \
-              --destination=${IMAGE}:${GIT_COMMIT} \
-              --destination=${IMAGE}:latest
-          """
+              --dockerfile="$WORKSPACE/Dockerfile" \
+              --context="$WORKSPACE" \
+              --destination=''' + "${IMAGE}:${GIT_COMMIT}" + ''' \
+              --destination=''' + "${IMAGE}:latest" + '''
+          '''
         }
       }
     }
@@ -71,25 +67,13 @@ spec:
     stage('Deploy to Kubernetes') {
       steps {
         container('kubectl') {
-          sh """
+          sh '''
             set -euo pipefail
-            kubectl apply -f k8s/
-            kubectl -n ${NS} set image deploy/${APP} ${APP}=${IMAGE}:${GIT_COMMIT}
-            kubectl -n ${NS} rollout status deploy/${APP} --timeout=180s
-            kubectl -n ${NS} get pods -o wide
-          """
+            kubectl apply -f "$WORKSPACE/k8s/"
+            kubectl -n ''' + "${NS}" + ''' set image deploy/''' + "${APP}" + ''' ''' + "${APP}" + '''=''' + "${IMAGE}:${GIT_COMMIT}" + '''
+            kubectl -n ''' + "${NS}" + ''' rollout status deploy/''' + "${APP}" + ''' --timeout=180s
+          '''
         }
-      }
-    }
-  }
-
-  post {
-    always {
-      container('kubectl') {
-        sh """
-          echo "==== K8S status (namespace ${NS}) ===="
-          kubectl -n ${NS} get deploy,po,svc,ingress || true
-        """
       }
     }
   }
