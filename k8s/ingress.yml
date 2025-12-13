@@ -3,13 +3,16 @@ kind: Ingress
 metadata:
   name: dubrovsky-arseny
   namespace: sorivma
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   ingressClassName: nginx
   rules:
     - http:
         paths:
-          - path: /sorivma
-            pathType: Prefix
+          - path: /sorivma(/|$)(.*)
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: dubrovsky-arseny
