@@ -50,16 +50,12 @@ pipeline {
     stage('Deploy to Kubernetes') {
       options { timeout(time: 10, unit: 'MINUTES') }
       steps {
-        // kubeconfig в Jenkins Credentials как "Secret file"
-        withCredentials([file(credentialsId: 'kubeconfig-sorivma', variable: 'KUBECONFIG')]) {
           sh '''
             set -eu
-
             kubectl -n "${NS}" apply -f k8s/
             kubectl -n "${NS}" set image deploy/"${APP}" "${APP}"="${IMAGE}:${GIT_COMMIT}"
             kubectl -n "${NS}" rollout status deploy/"${APP}" --timeout=180s
           '''
-        }
       }
     }
   }
