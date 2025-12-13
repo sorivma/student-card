@@ -1,42 +1,5 @@
 pipeline {
-  agent {
-    kubernetes {
-      defaultContainer 'kubectl'
-      yaml """
-apiVersion: v1
-kind: Pod
-spec:
-  serviceAccountName: jenkins
-
-  containers:
-    - name: kubectl
-      image: bitnami/kubectl:latest
-      command: ['sh', '-c', 'cat']
-      tty: true
-
-    - name: kaniko
-      image: gcr.io/kaniko-project/executor:debug
-      command: ['/busybox/cat']
-      tty: true
-      env:
-        - name: DOCKER_CONFIG
-          value: /kaniko/.docker
-        - name: PATH
-          value: /busybox:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-      volumeMounts:
-        - name: dockerhub
-          mountPath: /kaniko/.docker
-
-  volumes:
-    - name: dockerhub
-      secret:
-        secretName: dockerhub
-        items:
-          - key: .dockerconfigjson
-            path: config.json
-"""
-    }
-  }
+  agent { label 'docker' }
 
   environment {
     NS    = "sorivma"
@@ -44,7 +7,10 @@ spec:
     IMAGE = "sorivma/dubrovsky-arseny"
   }
 
-  options { timestamps() }
+  options {
+    timestamps()
+    disableConcurrentBuilds()
+  }
 
   stages {
     stage('Checkout') {
@@ -54,32 +20,54 @@ spec:
       }
     }
 
-    stage('Build & Push (Kaniko)') {
+    stage('Build & Push (Docker on runner)') {
+      options { timeout(time: 30, unit: 'MINUTES') }
       steps {
-        container('kaniko') {
+        withCredentials([usernamePassword(
+          credentialsId: 'sorivma-dockerhub-creds',
+          usernameVariable: 'DOCKERHUB_USER',
+          passwordVariable: 'DOCKERHUB_PASS'
+        )]) {
           sh '''
             set -eu
-            /kaniko/executor \
-              --dockerfile=Dockerfile \
-              --context="$WORKSPACE" \
-              --destination="${IMAGE}:${GIT_COMMIT}" \
-              --destination="${IMAGE}:latest"
+
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
+
+            docker build \
+              -t "${IMAGE}:${GIT_COMMIT}" \
+              -t "${IMAGE}:latest" \
+              .
+
+            docker push "${IMAGE}:${GIT_COMMIT}"
+            docker push "${IMAGE}:latest"
+
+            docker logout || true
           '''
         }
       }
     }
 
     stage('Deploy to Kubernetes') {
+      options { timeout(time: 10, unit: 'MINUTES') }
       steps {
-        container('kubectl') {
+        // kubeconfig в Jenkins Credentials как "Secret file"
+        withCredentials([file(credentialsId: 'kubeconfig-sorivma', variable: 'KUBECONFIG')]) {
           sh '''
             set -eu
+
             kubectl -n "${NS}" apply -f k8s/
             kubectl -n "${NS}" set image deploy/"${APP}" "${APP}"="${IMAGE}:${GIT_COMMIT}"
             kubectl -n "${NS}" rollout status deploy/"${APP}" --timeout=180s
           '''
         }
       }
+    }
+  }
+
+  post {
+    always {
+      // чуть-чуть чистим, чтобы не забить диск на раннере
+      sh 'docker image prune -f || true'
     }
   }
 }
