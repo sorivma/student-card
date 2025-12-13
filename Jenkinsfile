@@ -1,6 +1,4 @@
 pipeline {
-  agent { label 'docker' }
-
   environment {
     NS    = "sorivma"
     APP   = "dubrovsky-arseny"
