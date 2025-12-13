@@ -1,4 +1,6 @@
 pipeline {
+  agent any
+
   environment {
     NS    = "sorivma"
     APP   = "dubrovsky-arseny"
