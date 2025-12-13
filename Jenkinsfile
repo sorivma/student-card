@@ -7,19 +7,22 @@ apiVersion: v1
 kind: Pod
 spec:
   serviceAccountName: jenkins
+
   containers:
     - name: kubectl
-      image: bitnami/kubectl:1.30
+      image: bitnami/kubectl:latest
       command: ['sh', '-c', 'cat']
       tty: true
 
     - name: kaniko
-      image: gcr.io/kaniko-project/executor:v1.23.2
-      command: ['sh', '-c', 'cat']
+      image: gcr.io/kaniko-project/executor:debug
+      command: ['/busybox/cat']
       tty: true
       env:
         - name: DOCKER_CONFIG
           value: /kaniko/.docker
+        - name: PATH
+          value: /busybox:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       volumeMounts:
         - name: dockerhub
           mountPath: /kaniko/.docker
@@ -56,13 +59,11 @@ spec:
         container('kaniko') {
           sh '''
             set -eu
-
             /kaniko/executor \
               --dockerfile=Dockerfile \
               --context="$WORKSPACE" \
               --destination="${IMAGE}:${GIT_COMMIT}" \
-              --destination="${IMAGE}:latest" \
-              --verbosity=info
+              --destination="${IMAGE}:latest"
           '''
         }
       }
