@@ -3,30 +3,37 @@ pipeline {
     kubernetes {
       defaultContainer 'kubectl'
       yaml """
-        apiVersion: v1
-        kind: Pod
-        spec:
-          serviceAccountName: jenkins
-          containers:
-            - name: kaniko
-              image: gcr.io/kaniko-project/executor:latest
-              command: ['cat']
-              tty: true
-              volumeMounts:
-                - name: dockerhub
-                  mountPath: /kaniko/.docker
-            - name: kubectl
-              image: bitnami/kubectl:latest
-              command: ['cat']
-              tty: true
-          volumes:
-            - name: dockerhub
-              secret:
-                secretName: dockerhub
-                items:
-                  - key: .dockerconfigjson
-                    path: config.json
-        """
+apiVersion: v1
+kind: Pod
+spec:
+  serviceAccountName: jenkins
+  containers:
+    - name: kaniko
+      image: gcr.io/kaniko-project/executor:latest
+      command: ["/busybox/sh","-c"]
+      args: ["sleep 36000"]
+      volumeMounts:
+        - name: workspace-volume
+          mountPath: /home/jenkins/agent
+        - name: dockerhub
+          mountPath: /kaniko/.docker
+    - name: kubectl
+      image: bitnami/kubectl:latest
+      command: ["sh","-c","cat"]
+      tty: true
+      volumeMounts:
+        - name: workspace-volume
+          mountPath: /home/jenkins/agent
+  volumes:
+    - name: workspace-volume
+      emptyDir: {}
+    - name: dockerhub
+      secret:
+        secretName: dockerhub
+        items:
+          - key: .dockerconfigjson
+            path: config.json
+"""
     }
   }
 
@@ -47,7 +54,7 @@ pipeline {
           sh """
             /kaniko/executor \
               --dockerfile=Dockerfile \
-              --context=\$(pwd) \
+              --context=/home/jenkins/agent/workspace/${JOB_NAME} \
               --destination=${IMAGE}:${GIT_COMMIT} \
               --destination=${IMAGE}:latest
           """
@@ -57,12 +64,14 @@ pipeline {
 
     stage('Deploy to Kubernetes') {
       steps {
-        sh """
-          set -euo pipefail
-          kubectl apply -f k8s/
-          kubectl -n ${NS} set image deploy/${APP} ${APP}=${IMAGE}:${GIT_COMMIT}
-          kubectl -n ${NS} rollout status deploy/${APP} --timeout=180s
-        """
+        container('kubectl') {
+          sh """
+            set -euo pipefail
+            kubectl apply -f k8s/
+            kubectl -n ${NS} set image deploy/${APP} ${APP}=${IMAGE}:${GIT_COMMIT}
+            kubectl -n ${NS} rollout status deploy/${APP} --timeout=180s
+          """
+        }
       }
     }
   }
