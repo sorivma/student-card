@@ -10,8 +10,7 @@ spec:
   containers:
     - name: kaniko
       image: gcr.io/kaniko-project/executor:latest
-      command: ["/busybox/sh","-c"]
-      args: ["sleep 36000"]
+      tty: true
       volumeMounts:
         - name: workspace-volume
           mountPath: /home/jenkins/agent
@@ -19,7 +18,7 @@ spec:
           mountPath: /kaniko/.docker
     - name: kubectl
       image: bitnami/kubectl:latest
-      command: ["sh","-c","cat"]
+      command: ['cat']
       tty: true
       volumeMounts:
         - name: workspace-volume
@@ -43,9 +42,16 @@ spec:
     IMAGE = "sorivma/dubrovsky-arseny"
   }
 
+  options {
+    timestamps()
+  }
+
   stages {
     stage('Checkout') {
-      steps { checkout scm }
+      steps {
+        checkout scm
+        sh 'ls -la'
+      }
     }
 
     stage('Build & Push image (Kaniko)') {
@@ -70,8 +76,20 @@ spec:
             kubectl apply -f k8s/
             kubectl -n ${NS} set image deploy/${APP} ${APP}=${IMAGE}:${GIT_COMMIT}
             kubectl -n ${NS} rollout status deploy/${APP} --timeout=180s
+            kubectl -n ${NS} get pods -o wide
           """
         }
+      }
+    }
+  }
+
+  post {
+    always {
+      container('kubectl') {
+        sh """
+          echo "==== K8S status (namespace ${NS}) ===="
+          kubectl -n ${NS} get deploy,po,svc,ingress || true
+        """
       }
     }
   }
