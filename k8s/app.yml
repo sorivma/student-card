@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dubrovsky-arseny
+  namespace: sorivma
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: dubrovsky-arseny
+  template:
+    metadata:
+      labels:
+        app: dubrovsky-arseny
+    spec:
+      containers:
+        - name: dubrovsky-arseny
+          image: sorivma/dubrovsky-arseny:latest
+          ports:
+            - containerPort: 8080
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 6
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            periodSeconds: 5
+            failureThreshold: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dubrovsky-arseny
+  namespace: sorivma
+spec:
+  selector:
+    app: dubrovsky-arseny
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080

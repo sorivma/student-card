@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dubrovsky-arseny
+  namespace: sorivma
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /sorivma
+            pathType: Prefix
+            backend:
+              service:
+                name: dubrovsky-arseny
+                port:
+                  number: 80
