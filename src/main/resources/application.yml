@@ -1,6 +1,6 @@
 spring:
   application:
-    name: dubrovsky-arseny
+    name: student-card
 
 student:
   fullName: ${STUDENT_FULL_NAME:BLANK}
