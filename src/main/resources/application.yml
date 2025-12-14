@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: dubrovsky-arseny
+
+student:
+  fullName: ${STUDENT_FULL_NAME:BLANK}
+  group: ${STUDENT_GROUP:BLANK}
+  institute: ${STUDENT_INSTITUTE:BLANK}

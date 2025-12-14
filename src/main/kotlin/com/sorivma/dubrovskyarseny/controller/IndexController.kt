@@ -1,17 +1,20 @@
 package com.sorivma.dubrovskyarseny.controller
 
-import org.springframework.core.io.ClassPathResource
-import org.springframework.http.MediaType
+import com.sorivma.dubrovskyarseny.configuration.StudentProperties
+import org.springframework.stereotype.Controller
+import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RestController
-import java.nio.charset.StandardCharsets
+import java.time.LocalDate
 
-@RestController
-class IndexRestController {
+@Controller
+class IndexRestController(
+    private val student: StudentProperties
+) {
 
-    @GetMapping("/", produces = [MediaType.TEXT_HTML_VALUE])
-    fun index(): String {
-        val resource = ClassPathResource("static/index.html")
-        return resource.inputStream.use { it.readBytes().toString(StandardCharsets.UTF_8) }
+    @GetMapping("/")
+    fun index(model: Model): String {
+        model.addAttribute("student", student)
+        model.addAttribute("year", LocalDate.now().year)
+        return "index"
     }
 }

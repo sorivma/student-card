@@ -1,1 +1,1 @@
-rootProject.name = "dubrovsky-arseny"
+rootProject.name = "student-card"

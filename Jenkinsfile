@@ -3,8 +3,8 @@ pipeline {
 
   environment {
     NS    = "sorivma"
-    APP   = "dubrovsky-arseny"
-    IMAGE = "sorivma/dubrovsky-arseny"
+    APP   = "student-card"
+    IMAGE = "sorivma/student-card"
   }
 
   options {
@@ -62,7 +62,6 @@ pipeline {
 
   post {
     always {
-      // чуть-чуть чистим, чтобы не забить диск на раннере
       sh 'docker image prune -f || true'
     }
   }

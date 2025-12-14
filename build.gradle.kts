@@ -7,7 +7,7 @@ plugins {
 
 group = "com.sorivma"
 version = "0.0.1-SNAPSHOT"
-description = "dubrovsky-arseny"
+description = "A simple Spring Boot Application serving RUT (MIIT) student card via themyleaf template engine, configured by env properties"
 
 java {
     toolchain {
@@ -22,6 +22,7 @@ repositories {
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
+    implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("tools.jackson.module:jackson-module-kotlin")
     testImplementation("org.springframework.boot:spring-boot-starter-actuator-test")

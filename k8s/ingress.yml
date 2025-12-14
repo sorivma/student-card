@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: dubrovsky-arseny
+  name: student-card
   namespace: sorivma
   annotations:
     nginx.ingress.kubernetes.io/use-regex: "true"
@@ -15,6 +15,6 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: dubrovsky-arseny
+                name: student-card
                 port:
                   number: 80

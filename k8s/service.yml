@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dubrovsky-arseny
+  namespace: sorivma
+spec:
+  selector:
+    app: student-card
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080

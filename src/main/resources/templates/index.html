@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Карточка студента</title>
+
+    <style>
+        :root{
+            --bg1:#f5f8fc;
+            --bg2:#eef4ff;
+            --text:#12233a;
+            --muted:#5f7fa3;
+            --brand:#0b3c6f;
+            --card:#ffffff;
+            --border: rgba(11, 60, 111, 0.12);
+            --shadow: 0 16px 40px rgba(0, 35, 80, 0.12);
+        }
+
+        * { box-sizing: border-box; }
+
+        body{
+            margin:0;
+            font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+            color: var(--text);
+            background: radial-gradient(900px 500px at 50% -10%, var(--bg2), var(--bg1) 70%);
+            min-height: 100vh;
+            padding: 32px 16px;
+        }
+
+        .container{
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        .card{
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .accent{
+            height: 6px;
+            background: linear-gradient(90deg, var(--brand), #2f6fb6, #7aaee0);
+        }
+
+        .header{
+            padding: 28px 28px 18px;
+            display: grid;
+            gap: 14px;
+            justify-items: center;
+            text-align: center;
+        }
+
+        .header img{
+            max-width: 520px;
+            width: min(520px, 100%);
+            height: auto;
+            display: block;
+        }
+
+        .header img.logo {
+            width: 240px;
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .subtitle{
+            margin: 0;
+            font-size: 14px;
+            color: var(--muted);
+            letter-spacing: 0.2px;
+        }
+
+        .content{
+            padding: 24px 28px 28px;
+        }
+
+        .grid{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-top: 14px;
+        }
+
+        .field{
+            border: 1px solid rgba(11, 60, 111, 0.10);
+            border-radius: 14px;
+            padding: 14px 14px;
+            background: linear-gradient(180deg, rgba(245,248,252,0.6), rgba(255,255,255,1));
+        }
+
+        .label{
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .value{
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.25;
+            word-break: break-word;
+        }
+
+        footer{
+            padding: 18px 28px 24px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--muted);
+            border-top: 1px solid rgba(11, 60, 111, 0.10);
+            background: rgba(245,248,252,0.35);
+        }
+
+        @media (max-width: 720px){
+            .grid{ grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <div class="card">
+        <div class="accent"></div>
+
+        <div class="header">
+            <img class="logo" th:src="@{/RUT_rus.svg}" alt="Российский университет транспорта (РУТ МИИТ)">
+            <p class="subtitle">Карточка студента</p>
+        </div>
+
+        <div class="content">
+            <div class="grid">
+                <div class="field">
+                    <div class="label">ФИО</div>
+                    <div class="value" th:text="${student.fullName}">Дубровский Арсений Александрович</div>
+                </div>
+
+                <div class="field">
+                    <div class="label">Группа</div>
+                    <div class="value" th:text="${student.group}">УВП-171</div>
+                </div>
+
+                <div class="field">
+                    <div class="label">Институт</div>
+                    <div class="value" th:text="${student.institute}">ИУЦТ</div>
+                </div>
+
+                <div class="field">
+                    <div class="label">Университет</div>
+                    <div class="value">РУТ (МИИТ)</div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            © <span th:text="${year}">2025</span> · Выполнено для учебного задания
+        </footer>
+    </div>
+</div>
+</body>
+</html>
