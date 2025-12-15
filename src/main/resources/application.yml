@@ -4,8 +4,5 @@ spring:
 
 student:
   fullName: ${STUDENT_FULL_NAME:BLANK}
-  fullNameLink: ${STUDENT_FULL_NAME_LINK}
   group: ${STUDENT_GROUP:BLANK}
-  groupLink: ${STUDENT_GROUP_LINK}
   institute: ${STUDENT_INSTITUTE:BLANK}
-  instituteLink: ${STUDENT_INSTITUTE_LINK}

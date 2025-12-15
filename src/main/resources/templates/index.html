@@ -158,25 +158,6 @@
             fill: currentColor;
         }
 
-        .label-link{
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--muted);
-            text-decoration: none;
-            font-weight: 700;
-        }
-
-        .label-link:hover{
-            color: var(--brand);
-            text-decoration: underline;
-        }
-
-        .label-link:focus-visible{
-            outline: 3px solid rgba(47, 111, 182, 0.35);
-            outline-offset: 2px;
-            border-radius: 6px;
-        }
     </style>
 </head>
 
@@ -192,44 +173,20 @@
 
         <div class="content">
             <div class="grid">
-                <div class="label">
-                    <a th:if="${student.fullNameLink != null}"
-                       class="label-link"
-                       th:href="${student.fullNameLink}"
-                       target="_blank"
-                       rel="noopener noreferrer">
-                        ФИО
-                    </a>
-                    <span th:unless="${student.fullNameLink != null}">ФИО</span>
+                <div class="field">
+                    <div class="label">ФИО</div>
+                    <div class="value" th:text="${student.fullName}">Дубровский Арсений Александрович</div>
                 </div>
-                <div class="value" th:text="${student.fullName}">Дубровский Арсений Александрович</div>
 
-
-                <div class="label">
-                    <a th:if="${student.groupLink != null}"
-                       class="label-link"
-                       th:href="${student.groupLink}"
-                       target="_blank"
-                       rel="noopener noreferrer">
-                        Группа
-                    </a>
-                    <span th:unless="${student.groupLink != null}">Группа</span>
+                <div class="field">
+                    <div class="label">Группа</div>
+                    <div class="value" th:text="${student.group}">УВП-171</div>
                 </div>
-                <div class="value" th:text="${student.group}">УВП-171</div>
 
-
-                <div class="label">
-                    <a th:if="${student.instituteLink != null}"
-                       class="label-link"
-                       th:href="${student.instituteLink}"
-                       target="_blank"
-                       rel="noopener noreferrer">
-                        Институт
-                    </a>
-                    <span th:unless="${student.instituteLink != null}">Институт</span>
+                <div class="field">
+                    <div class="label">Институт</div>
+                    <div class="value" th:text="${student.institute}">ИУЦТ</div>
                 </div>
-                <div class="value" th:text="${student.institute}">ИУЦТ</div>
-
 
                 <div class="field">
                     <div class="label">Университет</div>
