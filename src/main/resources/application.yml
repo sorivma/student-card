@@ -6,3 +6,19 @@ student:
   fullName: ${STUDENT_FULL_NAME:BLANK}
   group: ${STUDENT_GROUP:BLANK}
   institute: ${STUDENT_INSTITUTE:BLANK}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
