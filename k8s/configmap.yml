@@ -4,5 +4,8 @@ metadata:
   name: student-card-config
 data:
   STUDENT_FULL_NAME: "BLANK"
+  STUDENT_FULL_NAME_LINK: null
   STUDENT_GROUP: "BLANK"
+  STUDENT_GROUP_LINK: null
   STUDENT_INSTITUTE: "BLANK"
+  STUDENT_INSTITUTE_LINK: null
