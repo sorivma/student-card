@@ -1,6 +1,14 @@
 pipeline {
   agent any
 
+  parameters {
+    booleanParam(
+      name: 'APPLY_CONFIGMAP',
+      defaultValue: false,
+      description: 'Apply k8s/configmap.yml (unchecked by default)'
+    )
+  }
+
   environment {
     NS    = "sorivma"
     APP   = "student-card"
@@ -30,7 +38,6 @@ pipeline {
         )]) {
           sh '''
             set -eu
-
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
 
             docker build \
@@ -50,12 +57,27 @@ pipeline {
     stage('Deploy to Kubernetes') {
       options { timeout(time: 10, unit: 'MINUTES') }
       steps {
-          sh '''
+        script {
+          def applyCm = params.APPLY_CONFIGMAP ? "true" : "false"
+
+          sh """
             set -eu
-            kubectl -n "${NS}" apply -f k8s/
+
+            # apply all manifests except configmap.yml
+            for f in k8s/*.y*ml; do
+              [ "\$(basename "\$f")" = "configmap.yml" ] && continue
+              kubectl -n "${NS}" apply -f "\$f"
+            done
+
+            # optional configmap apply
+            if [ "${applyCm}" = "true" ]; then
+              kubectl -n "${NS}" apply -f k8s/configmap.yml
+            fi
+
             kubectl -n "${NS}" set image deploy/"${APP}" "${APP}"="${IMAGE}:${GIT_COMMIT}"
             kubectl -n "${NS}" rollout status deploy/"${APP}" --timeout=180s
-          '''
+          """
+        }
       }
     }
   }
